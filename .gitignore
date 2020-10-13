@@ -1,4 +1,15 @@
+# System files
+.DS_Store
+
+# Python environment
 /venv
+
+# IDE settings
+/.idea
+
+# Credentials
 /credentials.json
 /token.pickle
-.DS_Store
+
+# Sample files
+/examples
