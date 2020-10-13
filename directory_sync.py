@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from difflib import SequenceMatcher
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -99,10 +100,13 @@ def main() -> None:
     missing = []
     for member in myaegee_members:
         email_match = any([user for user in gsuite_users if any(member['user']['email'] == email['address'] for email in user['emails'])])
-        name_match = any([user for user in gsuite_users if f'{member["user"]["first_name"]} {member["user"]["last_name"]}' == user['name']['fullName']])
+        name_match = any([user for user in gsuite_users if SequenceMatcher(None, f'{member["user"]["first_name"]} {member["user"]["last_name"]}', user['name']['fullName']).ratio() > 0.9])
         if not email_match and not name_match:
             missing.append(member)
     print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} users matched')
+    print('')
+    print('Members without G-Suite account:')
+    print('\n'.join(map(lambda m: f'* {m["user"]["first_name"]} {m["user"]["last_name"]} ({m["user"]["email"]})', missing)))
 
 
 if __name__ == '__main__':
