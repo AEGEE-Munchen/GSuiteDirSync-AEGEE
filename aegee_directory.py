@@ -1,30 +1,12 @@
-#!/usr/bin/env python3
-
-from difflib import SequenceMatcher
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from typing import List
 
-import argparse
 import os.path
 import pickle
 import requests
-
-AEGEE_MUENCHEN_BODY_ID = 117
-
-
-def parse_args() -> argparse.Namespace:
-    """Parses the script arguments.
-    """
-    parser = argparse.ArgumentParser(description='Sync AEGEE-München\'s G-Suite Directory')
-    parser.add_argument('--username', dest='myaegee_user', help='MyAEGEE Username')
-    parser.add_argument('--password', dest='myaegee_pass', help='MyAEGEE Password')
-    parser.add_argument('--body-id', dest='myaegee_body_id', help='MyAEGEE Antenna Body ID', type=int, default=AEGEE_MUENCHEN_BODY_ID)
-    parser.add_argument('--credentials-file', dest='gsuite_credfile', help='G-Suite JSON credentials', default='credentials.json')
-    args = parser.parse_args()
-    return args
 
 
 def myaegee_login(username: str, password: str) -> str:
@@ -83,31 +65,3 @@ def gsuite_load_directory(creds) -> List:
     # Call the Admin SDK Directory API
     results = service.users().list(customer='my_customer', orderBy='email').execute()
     return results.get('users', [])
-
-
-def main() -> None:
-    args = parse_args()
-
-    # Get MyAEGEE body members
-    myaegee_access_token = myaegee_login(args.myaegee_user, args.myaegee_pass)
-    myaegee_members = myaegee_get_members(args.myaegee_body_id, myaegee_access_token)
-
-    # Get G-Suite Directory users
-    gsuite_creds = gsuite_auth(args.gsuite_credfile)
-    gsuite_users = gsuite_load_directory(gsuite_creds)
-
-    # Match users from MyAEGEE and G-Suite
-    missing = []
-    for member in myaegee_members:
-        email_match = any([user for user in gsuite_users if any(member['user']['email'] == email['address'] for email in user['emails'])])
-        name_match = any([user for user in gsuite_users if SequenceMatcher(None, f'{member["user"]["first_name"]} {member["user"]["last_name"]}', user['name']['fullName']).ratio() > 0.9])
-        if not email_match and not name_match:
-            missing.append(member)
-    print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} users matched')
-    print('')
-    print('Members without G-Suite account:')
-    print('\n'.join(map(lambda m: f'* {m["user"]["first_name"]} {m["user"]["last_name"]} ({m["user"]["email"]})', missing)))
-
-
-if __name__ == '__main__':
-    main()
