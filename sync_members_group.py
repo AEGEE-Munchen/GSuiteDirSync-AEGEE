@@ -7,6 +7,16 @@ import re
 
 AEGEE_MUENCHEN_BODY_ID = 117
 AEGEE_MUENCHEN_MEMBERS_GROUP = 'members@aegee-muenchen.de'
+EXTRA_EXCLUDED = [
+    'admin@aegee-muenchen.de',
+    'events@aegee-muenchen.de',
+    'externalrelations@aegee-muenchen.de',
+    'internalrelations@aegee-muenchen.de',
+    'it@aegee-muenchen.de',
+    'president@aegee-muenchen.de',
+    'secretary@aegee-muenchen.de',
+    'treasurer@aegee-muenchen.de'
+]
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,19 +42,31 @@ def main() -> None:
     gsuite_creds = gsuite_auth(args.gsuite_credfile)
     gsuite_users = gsuite_load_group(gsuite_creds, AEGEE_MUENCHEN_MEMBERS_GROUP)
 
-    # Match users from MyAEGEE and members@aegee-muenchen.de
+    # Find users from MyAEGEE missing from the G-Suite group
     missing = []
     for member in myaegee_members:
-        email_match = any([user for user in gsuite_users if member['user']['email'] == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member['user']['email']) == user['email']])
-        if not email_match:
+        is_in_group = any([user for user in gsuite_users if member['user']['email'] == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member['user']['email']) == user['email']])
+        if not is_in_group:
             missing.append(member)
-    print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} MyAEGEE users matched')
-    print('')
     if len(missing) > 0:
-        print(f'Members missing from {AEGEE_MUENCHEN_MEMBERS_GROUP}:')
+        print(f'Members missing from {AEGEE_MUENCHEN_MEMBERS_GROUP} (matched {len(myaegee_members) - len(missing)}/{len(myaegee_members)} members):')
         print('\n'.join(map(lambda m: f'* {m["user"]["first_name"]} {m["user"]["last_name"]} ({m["user"]["email"]})', missing)))
     else:
         print(f'All MyAEGEE users included in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
+    print('')
+
+    # Find extra users in the G-Suite group which are not in MyAEGEE
+    extra = []
+    for user in gsuite_users:
+        if user["email"] not in EXTRA_EXCLUDED:
+            is_in_myaegee = any([member for member in myaegee_members if member['user']['email'] == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member['user']['email']) == user['email']])
+            if not is_in_myaegee:
+                extra.append(user)
+    if len(extra) > 0:
+        print(f'Extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP} (matched {len(gsuite_users) - len(extra)}/{len(gsuite_users)} users):')
+        print('\n'.join(map(lambda u: f'* {u["email"]}', extra)))
+    else:
+        print(f'No extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
 
 
 if __name__ == '__main__':
