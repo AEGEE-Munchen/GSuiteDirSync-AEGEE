@@ -38,6 +38,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def members_sync(args: argparse.Namespace) -> None:
+    """Prints differences between members list from MyAEGEE and members@aegee-muenchen.de (missing and extra emails).
+    """
     # Get MyAEGEE body members
     myaegee_access_token = myaegee_login(args.myaegee_user, args.myaegee_pass)
     myaegee_members = myaegee_get_members(args.myaegee_body_id, myaegee_access_token)
@@ -74,6 +76,8 @@ def members_sync(args: argparse.Namespace) -> None:
 
 
 def actives_sync(args: argparse.Namespace) -> None:
+    """Prints the list of MyAEGEE members without a G-Suite account.
+    """
     # Get MyAEGEE body members
     myaegee_access_token = myaegee_login(args.myaegee_user, args.myaegee_pass)
     myaegee_members = myaegee_get_members(args.myaegee_body_id, myaegee_access_token)
