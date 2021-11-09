@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from aegee_directory import *
+from difflib import SequenceMatcher
 
 import argparse
 import re
@@ -27,13 +28,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--password', dest='myaegee_pass', help='MyAEGEE Password', required=True)
     parser.add_argument('--body-id', dest='myaegee_body_id', help='MyAEGEE Antenna Body ID', type=int, default=AEGEE_MUENCHEN_BODY_ID)
     parser.add_argument('--credentials-file', dest='gsuite_credfile', help='G-Suite JSON credentials', default='credentials.json')
+    subparsers = parser.add_subparsers(title='subcommands', description='Available subcommands', required=True)
+    parser_members_sync = subparsers.add_parser('members-sync')
+    parser_actives_sync = subparsers.add_parser('actives-sync')
+    parser_members_sync.set_defaults(func=members_sync)
+    parser_actives_sync.set_defaults(func=actives_sync)
     args = parser.parse_args()
     return args
 
 
-def main() -> None:
-    args = parse_args()
-
+def members_sync(args: argparse.Namespace) -> None:
     # Get MyAEGEE body members
     myaegee_access_token = myaegee_login(args.myaegee_user, args.myaegee_pass)
     myaegee_members = myaegee_get_members(args.myaegee_body_id, myaegee_access_token)
@@ -67,6 +71,33 @@ def main() -> None:
         print('\n'.join(map(lambda u: f'* {u["email"]}', extra)))
     else:
         print(f'No extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
+
+
+def actives_sync(args: argparse.Namespace) -> None:
+    # Get MyAEGEE body members
+    myaegee_access_token = myaegee_login(args.myaegee_user, args.myaegee_pass)
+    myaegee_members = myaegee_get_members(args.myaegee_body_id, myaegee_access_token)
+
+    # Get G-Suite Directory users
+    gsuite_creds = gsuite_auth(args.gsuite_credfile)
+    gsuite_users = gsuite_load_directory(gsuite_creds)
+
+    # Match users from MyAEGEE and G-Suite
+    missing = []
+    for member in myaegee_members:
+        email_match = any([user for user in gsuite_users if any(member['user']['email'] == email['address'] for email in user['emails'])])
+        name_match = any([user for user in gsuite_users if SequenceMatcher(None, f'{member["user"]["first_name"]} {member["user"]["last_name"]}', user['name']['fullName']).ratio() > 0.9])
+        if not email_match and not name_match:
+            missing.append(member)
+    print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} MyAEGEE users matched')
+    print('')
+    print('Members without G-Suite account:')
+    print('\n'.join(map(lambda m: f'* {m["user"]["first_name"]} {m["user"]["last_name"]} ({m["user"]["email"]})', missing)))
+
+
+def main() -> None:
+    args = parse_args()
+    args.func(args)
 
 
 if __name__ == '__main__':
