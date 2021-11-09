@@ -23,8 +23,8 @@ def parse_args() -> argparse.Namespace:
     """Parses the script arguments.
     """
     parser = argparse.ArgumentParser(description='Sync AEGEE-München\'s G-Suite Directory')
-    parser.add_argument('--username', dest='myaegee_user', help='MyAEGEE Username')
-    parser.add_argument('--password', dest='myaegee_pass', help='MyAEGEE Password')
+    parser.add_argument('--username', dest='myaegee_user', help='MyAEGEE Username', required=True)
+    parser.add_argument('--password', dest='myaegee_pass', help='MyAEGEE Password', required=True)
     parser.add_argument('--body-id', dest='myaegee_body_id', help='MyAEGEE Antenna Body ID', type=int, default=AEGEE_MUENCHEN_BODY_ID)
     parser.add_argument('--credentials-file', dest='gsuite_credfile', help='G-Suite JSON credentials', default='credentials.json')
     args = parser.parse_args()
