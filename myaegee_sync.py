@@ -62,15 +62,15 @@ def members_sync(args: argparse.Namespace) -> None:
     print('')
 
     # Find extra users in the G-Suite group which are not in MyAEGEE
-    extra = []
+    extra: List[Member] = []
     for user in gsuite_users:
-        if user["email"] not in EXTRA_EXCLUDED:
+        if user['email'] not in EXTRA_EXCLUDED:
             is_in_myaegee = any([member for member in myaegee_members if member.user.email == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member.user.email) == user['email']])
             if not is_in_myaegee:
                 extra.append(user)
     if len(extra) > 0:
         print(f'Extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP} (matched {len(gsuite_users) - len(extra)}/{len(gsuite_users)} users):')
-        print('\n'.join(map(lambda u: f'* {u["email"]}', extra)))
+        print('\n'.join(map(lambda u: f"* {u['email']}", extra)))
     else:
         print(f'No extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
 

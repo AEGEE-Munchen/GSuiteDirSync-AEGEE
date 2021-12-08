@@ -7,7 +7,10 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from typing import List, Any
+from typing import TYPE_CHECKING, List, Any
+
+if TYPE_CHECKING:
+    from googleapiclient._apis.admin.directory_v1.schemas import Member, User
 
 import os.path
 import pickle
@@ -104,7 +107,7 @@ def gsuite_auth(credentials_file: str) -> Credentials:
     return creds
 
 
-def gsuite_load_directory(creds: Any) -> List:
+def gsuite_load_directory(creds: Any) -> List[User]:
     """Loads the G-Suite Directory users.
     Returns a list of G-Suite users who belong to the domain.
     """
@@ -115,7 +118,7 @@ def gsuite_load_directory(creds: Any) -> List:
     return results.get('users', [])
 
 
-def gsuite_load_group(creds: Any, group_email: str) -> List:
+def gsuite_load_group(creds: Any, group_email: str) -> List[Member]:
     """Loads the list of members of the inpuit group.
     Returns a list of emails that belong to the input group.
     """
