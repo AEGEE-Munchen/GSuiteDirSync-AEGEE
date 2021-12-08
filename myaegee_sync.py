@@ -49,14 +49,14 @@ def members_sync(args: argparse.Namespace) -> None:
     gsuite_users = gsuite_load_group(gsuite_creds, AEGEE_MUENCHEN_MEMBERS_GROUP)
 
     # Find users from MyAEGEE missing from the G-Suite group
-    missing = []
+    missing: List[MyAEGEEMember] = []
     for member in myaegee_members:
-        is_in_group = any([user for user in gsuite_users if member['user']['email'] == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member['user']['email']) == user['email']])
+        is_in_group = any([user for user in gsuite_users if member.user.email == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member.user.email) == user['email']])
         if not is_in_group:
             missing.append(member)
     if len(missing) > 0:
         print(f'Members missing from {AEGEE_MUENCHEN_MEMBERS_GROUP} (matched {len(myaegee_members) - len(missing)}/{len(myaegee_members)} members):')
-        print('\n'.join(map(lambda m: f'* {m["user"]["first_name"]} {m["user"]["last_name"]} ({m["user"]["email"]})', missing)))
+        print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', missing)))
     else:
         print(f'All MyAEGEE users included in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
     print('')
@@ -65,7 +65,7 @@ def members_sync(args: argparse.Namespace) -> None:
     extra = []
     for user in gsuite_users:
         if user["email"] not in EXTRA_EXCLUDED:
-            is_in_myaegee = any([member for member in myaegee_members if member['user']['email'] == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member['user']['email']) == user['email']])
+            is_in_myaegee = any([member for member in myaegee_members if member.user.email == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member.user.email) == user['email']])
             if not is_in_myaegee:
                 extra.append(user)
     if len(extra) > 0:
@@ -87,16 +87,16 @@ def actives_sync(args: argparse.Namespace) -> None:
     gsuite_users = gsuite_load_directory(gsuite_creds)
 
     # Match users from MyAEGEE and G-Suite
-    missing = []
+    missing: List[MyAEGEEMember] = []
     for member in myaegee_members:
-        email_match = any([user for user in gsuite_users if any(member['user']['email'] == email['address'] for email in user['emails'])])
-        name_match = any([user for user in gsuite_users if SequenceMatcher(None, f'{member["user"]["first_name"]} {member["user"]["last_name"]}', user['name']['fullName']).ratio() > 0.9])
+        email_match = any([user for user in gsuite_users if any(member.user.email == email['address'] for email in user['emails'])])
+        name_match = any([user for user in gsuite_users if SequenceMatcher(None, f'{member.user.first_name} {member.user.last_name}', user['name']['fullName']).ratio() > 0.9])
         if not email_match and not name_match:
             missing.append(member)
     print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} MyAEGEE users matched')
     print('')
     print('Members without G-Suite account:')
-    print('\n'.join(map(lambda m: f'* {m["user"]["first_name"]} {m["user"]["last_name"]} ({m["user"]["email"]})', missing)))
+    print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', missing)))
 
 
 def main() -> None:

@@ -10,6 +10,7 @@ google-api-core = "^2.2.2"
 requests = "^2.26.0"
 google-api-python-client = "^2.29.0"
 google-auth-oauthlib = "^0.4.6"
+dataclass-wizard = "^0.20.3"
 
 [tool.poetry.dev-dependencies]
 

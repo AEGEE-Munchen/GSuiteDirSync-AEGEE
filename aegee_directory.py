@@ -1,3 +1,8 @@
+from __future__ import annotations
+from dataclass_wizard import fromdict, DumpMeta
+from dataclass_wizard.enums import DateTimeTo, LetterCase
+from dataclasses import dataclass
+from datetime import date, datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -7,6 +12,48 @@ from typing import List, Any
 import os.path
 import pickle
 import requests
+
+
+@dataclass
+class MyAEGEEUser:
+    notification_email: str
+    id: int
+    username: str
+    email: str
+    mail_confirmed_at: datetime
+    active: bool
+    superadmin: bool
+    privacy_consent: datetime | None
+    first_name: str
+    last_name: str
+    date_of_birth: date | None
+    gender: str | None
+    phone: str | None
+    address: str | None
+    about_me: str | None
+    primary_email: str
+    last_logged_in: datetime | None
+    last_active: datetime | None
+    gsuite_id: str | None
+    created_at: datetime
+    updated_at: datetime
+    campaign_id: int
+    primary_body_id: int | None
+
+
+@dataclass
+class MyAEGEEMember:
+    id: int
+    comment: str | None
+    created_at: datetime
+    updated_at: datetime
+    body_id: int
+    user_id: int
+    user: MyAEGEEUser
+
+
+DumpMeta(marshal_date_time_as=DateTimeTo.TIMESTAMP, key_transform=LetterCase.SNAKE).bind_to(MyAEGEEMember)
+DumpMeta(marshal_date_time_as=DateTimeTo.TIMESTAMP, key_transform=LetterCase.SNAKE).bind_to(MyAEGEEUser)
 
 
 def myaegee_login(username: str, password: str) -> str:
@@ -20,7 +67,7 @@ def myaegee_login(username: str, password: str) -> str:
     return login['access_token']
 
 
-def myaegee_get_members(body_id: int, access_token: str) -> List:
+def myaegee_get_members(body_id: int, access_token: str) -> List[MyAEGEEMember]:
     """Fetches all the members from a given body.
     Returns a list of members who belong to body identified with `body_id`.
     """
@@ -28,7 +75,8 @@ def myaegee_get_members(body_id: int, access_token: str) -> List:
     members = requests.get(_MEMBERS_ENDPOINT, headers={'Content-Type': 'application/json', 'X-Auth-Token': access_token}).json()
     if not members['success']:
         raise Exception(f'Error fetching members: {members["message"]}')
-    return members['data']
+    members_parsed = [fromdict(MyAEGEEMember, member_data) for member_data in members['data']]
+    return members_parsed
 
 
 def gsuite_auth(credentials_file: str) -> Credentials:
