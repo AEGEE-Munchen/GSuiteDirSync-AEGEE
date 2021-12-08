@@ -9,6 +9,7 @@ import re
 
 AEGEE_MUENCHEN_BODY_ID = 117
 AEGEE_MUENCHEN_MEMBERS_GROUP = 'members@aegee-muenchen.de'
+AEGEE_MUENCHEN_DOMAIN = 'aegee-muenchen.de'
 EXTRA_EXCLUDED = [
     'admin@aegee-muenchen.de',
     'events@aegee-muenchen.de',
@@ -100,6 +101,21 @@ def actives_sync(args: argparse.Namespace) -> None:
     print('')
     print('Members without G-Suite account:')
     print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', missing)))
+    print('')
+
+    # Find extra users with G-Suite account which are not in MyAEGEE
+    extra: List[User] = []
+    for user in gsuite_users:
+        if all(email not in EXTRA_EXCLUDED for email in user['emails']):
+            email_match = any([member.user.email in user['emails'] for member in myaegee_members])
+            name_match = any([SequenceMatcher(None, f'{member.user.first_name} {member.user.last_name}', user['name']['fullName']).ratio() > 0.9 for member in myaegee_members])
+            if not email_match and not name_match:
+                extra.append(user)
+    if len(extra) > 0:
+        print(f'Extra users in G-Suite (matched {len(gsuite_users) - len(extra)}/{len(gsuite_users)} users):')
+        print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", extra)))
+    else:
+        print(f'No extra users in G-Suite!')
 
 
 def main() -> None:
