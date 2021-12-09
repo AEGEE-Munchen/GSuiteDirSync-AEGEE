@@ -6,7 +6,7 @@ This repository contains scripts to interact with AEGEE's OMS MyAEGEE and a loca
 
 1. Create a Google Cloud project
 2. Create a set of OAuth API credentials in the Google Cloud project under https://console.cloud.google.com/apis/credentials
-    2.1. Download the generated credentials into `credentials.json` on the project root directory
+    1. Download the generated credentials into `credentials.json` on the project root directory
 3. Initialize the repo dependencies
     ```sh
     virtualenv venv
