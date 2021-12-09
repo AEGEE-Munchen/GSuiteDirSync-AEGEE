@@ -106,8 +106,9 @@ def actives_sync(args: argparse.Namespace) -> None:
     # Find extra users with G-Suite account which are not in MyAEGEE
     extra: List[User] = []
     for user in gsuite_users:
-        if all(email not in EXTRA_EXCLUDED for email in user['emails']):
-            email_match = any([member.user.email in user['emails'] for member in myaegee_members])
+        user_emails = map(lambda email: email['address'], user['emails'])
+        if not any([email in EXTRA_EXCLUDED for email in user_emails]):
+            email_match = any([member.user.email in user_emails for member in myaegee_members])
             name_match = any([SequenceMatcher(None, f'{member.user.first_name} {member.user.last_name}', user['name']['fullName']).ratio() > 0.9 for member in myaegee_members])
             if not email_match and not name_match:
                 extra.append(user)
