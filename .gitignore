@@ -9,6 +9,7 @@
 /.idea
 
 # Credentials
+/.env
 /credentials.json
 /token.pickle
 
