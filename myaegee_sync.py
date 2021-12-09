@@ -20,6 +20,7 @@ EXTRA_EXCLUDED = [
     'it@aegee-muenchen.de',
     'president@aegee-muenchen.de',
     'secretary@aegee-muenchen.de',
+    'su@aegee-muenchen.de',
     'treasurer@aegee-muenchen.de'
 ]
 
