@@ -4,6 +4,7 @@ from aegee_directory import *
 from difflib import SequenceMatcher
 
 import argparse
+import os
 import re
 
 AEGEE_MUENCHEN_BODY_ID = 117
@@ -24,8 +25,8 @@ def parse_args() -> argparse.Namespace:
     """Parses the script arguments.
     """
     parser = argparse.ArgumentParser(description='Sync AEGEE-München\'s G-Suite Directory')
-    parser.add_argument('--username', dest='myaegee_user', help='MyAEGEE Username', required=True)
-    parser.add_argument('--password', dest='myaegee_pass', help='MyAEGEE Password', required=True)
+    parser.add_argument('--myaegee-user', dest='myaegee_user', help='MyAEGEE Username', default=os.environ.get('MYAEGEE_USER'))
+    parser.add_argument('--myaegee-pass', dest='myaegee_pass', help='MyAEGEE Password', default=os.environ.get('MYAEGEE_PASS'))
     parser.add_argument('--body-id', dest='myaegee_body_id', help='MyAEGEE Antenna Body ID', type=int, default=AEGEE_MUENCHEN_BODY_ID)
     parser.add_argument('--credentials-file', dest='gsuite_credfile', help='G-Suite JSON credentials', default='credentials.json')
     subparsers = parser.add_subparsers(title='subcommands', description='Available subcommands', required=True)
@@ -34,6 +35,8 @@ def parse_args() -> argparse.Namespace:
     parser_members_sync.set_defaults(func=members_sync)
     parser_actives_sync.set_defaults(func=actives_sync)
     args = parser.parse_args()
+    if not args.myaegee_user or not args.myaegee_pass:
+        exit(parser.print_usage())
     return args
 
 
