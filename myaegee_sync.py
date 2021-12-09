@@ -12,8 +12,10 @@ AEGEE_MUENCHEN_MEMBERS_GROUP = 'members@aegee-muenchen.de'
 AEGEE_MUENCHEN_DOMAIN = 'aegee-muenchen.de'
 EXTRA_EXCLUDED = [
     'admin@aegee-muenchen.de',
+    'archive@aegee-muenchen.de',
     'events@aegee-muenchen.de',
     'externalrelations@aegee-muenchen.de',
+    'info@aegee-muenchen.de',
     'internalrelations@aegee-muenchen.de',
     'it@aegee-muenchen.de',
     'president@aegee-muenchen.de',
@@ -106,7 +108,7 @@ def actives_sync(args: argparse.Namespace) -> None:
     # Find extra users with G-Suite account which are not in MyAEGEE
     extra: List[User] = []
     for user in gsuite_users:
-        user_emails = map(lambda email: email['address'], user['emails'])
+        user_emails = list(map(lambda email: email['address'], user['emails']))
         if not any([email in EXTRA_EXCLUDED for email in user_emails]):
             email_match = any([member.user.email in user_emails for member in myaegee_members])
             name_match = any([SequenceMatcher(None, f'{member.user.first_name} {member.user.last_name}', user['name']['fullName']).ratio() > 0.9 for member in myaegee_members])
