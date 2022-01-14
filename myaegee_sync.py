@@ -61,7 +61,7 @@ def members_sync(args: argparse.Namespace) -> None:
     # Find users from MyAEGEE missing from the G-Suite group
     missing: List[MyAEGEEMember] = []
     for member in myaegee_members:
-        is_in_group = any([user for user in gsuite_users if member.user.email == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member.user.email) == user['email']])
+        is_in_group = any([user for user in gsuite_users if member.user.email.lower() == user['email'].lower() or re.sub('@gmail\.com$', '@googlemail.com', member.user.email.lower()) == user['email'].lower()])
         if not is_in_group:
             missing.append(member)
     if len(missing) > 0:
@@ -75,7 +75,7 @@ def members_sync(args: argparse.Namespace) -> None:
     extra: List[Member] = []
     for user in gsuite_users:
         if user['email'] not in EXTRA_EXCLUDED:
-            is_in_myaegee = any([member for member in myaegee_members if member.user.email == user['email'] or re.sub('@gmail\.com$', '@googlemail.com', member.user.email) == user['email']])
+            is_in_myaegee = any([member for member in myaegee_members if member.user.email.lower() == user['email'].lower() or re.sub('@gmail\.com$', '@googlemail.com', member.user.email.lower()) == user['email'].lower()])
             if not is_in_myaegee:
                 extra.append(user)
     if len(extra) > 0:
