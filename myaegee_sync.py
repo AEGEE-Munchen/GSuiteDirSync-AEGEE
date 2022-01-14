@@ -14,7 +14,7 @@ EXTRA_EXCLUDED = [
     'admin@aegee-muenchen.de',
     'archive@aegee-muenchen.de',
     'events@aegee-muenchen.de',
-    'europeanaffairs@aegee-muenchen.de',
+    'european.affairs@aegee-muenchen.de',
     'externalrelations@aegee-muenchen.de',
     'info@aegee-muenchen.de',
     'internalrelations@aegee-muenchen.de',
