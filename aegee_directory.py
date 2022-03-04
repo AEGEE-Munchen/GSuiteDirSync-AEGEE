@@ -10,7 +10,7 @@ from google.oauth2.credentials import Credentials
 from typing import TYPE_CHECKING, List, Any
 
 if TYPE_CHECKING:
-    from googleapiclient._apis.admin.directory_v1.schemas import Member, User
+    from googleapiclient._apis.admin.directory_v1.schemas import Member as GSuiteMember, User as GSuiteUser
 
 import os.path
 import pickle
@@ -107,7 +107,7 @@ def gsuite_auth(credentials_file: str) -> Credentials:
     return creds
 
 
-def gsuite_load_directory(creds: Any) -> List[User]:
+def gsuite_load_directory(creds: Any) -> List[GSuiteUser]:
     """Loads the G-Suite Directory users.
     Returns a list of G-Suite users who belong to the domain.
     """
@@ -118,7 +118,7 @@ def gsuite_load_directory(creds: Any) -> List[User]:
     return results.get('users', [])
 
 
-def gsuite_load_group(creds: Any, group_email: str) -> List[Member]:
+def gsuite_load_group(creds: Any, group_email: str) -> List[GSuiteMember]:
     """Loads the list of members of the inpuit group.
     Returns a list of emails that belong to the input group.
     """
