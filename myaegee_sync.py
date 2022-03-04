@@ -9,6 +9,7 @@ import re
 
 AEGEE_MUENCHEN_BODY_ID = 117
 AEGEE_MUENCHEN_MEMBERS_GROUP = 'members@aegee-muenchen.de'
+AEGEE_MUENCHEN_ACTIVES_GROUP = 'actives@aegee-muenchen.de'
 AEGEE_MUENCHEN_DOMAIN = 'aegee-muenchen.de'
 EXTRA_EXCLUDED = [
     'admin@aegee-muenchen.de',
@@ -83,6 +84,7 @@ def members_sync(args: argparse.Namespace) -> None:
         print('\n'.join(map(lambda u: f"* {u['email']}", extra)))
     else:
         print(f'No extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
+    print('')
 
 
 def actives_sync(args: argparse.Namespace) -> None:
@@ -95,6 +97,7 @@ def actives_sync(args: argparse.Namespace) -> None:
     # Get G-Suite Directory users
     gsuite_creds = gsuite_auth(args.gsuite_credfile)
     gsuite_users = gsuite_load_directory(gsuite_creds)
+    gsuite_active_users = gsuite_load_group(gsuite_creds, AEGEE_MUENCHEN_ACTIVES_GROUP)
 
     # Match users from MyAEGEE and G-Suite
     missing: List[MyAEGEEMember] = []
@@ -122,7 +125,21 @@ def actives_sync(args: argparse.Namespace) -> None:
         print(f'Extra users in G-Suite (matched {len(gsuite_users) - len(extra)}/{len(gsuite_users)} users):')
         print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", extra)))
     else:
-        print(f'No extra users in G-Suite!')
+        print('No extra users in G-Suite!')
+    print('')
+
+    # Find G-Suite users that are not in the actives group
+    actives_missing: List[Member] = []
+    for user in gsuite_users:
+        is_in_group = any([active_user['id'] == user['id'] for active_user in gsuite_active_users])
+        if not is_in_group:
+            actives_missing.append(user)
+    if len(actives_missing) > 0:
+        print(f'G-Suite members not included in {AEGEE_MUENCHEN_ACTIVES_GROUP} ({len(actives_missing)}/{len(gsuite_users)})')
+        print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))}):", actives_missing)))
+    else:
+        print(f'All G-Suite users included in {AEGEE_MUENCHEN_ACTIVES_GROUP}!')
+    print('')
 
 
 def main() -> None:
