@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from typing import Dict
 from aegee_directory import *
 from difflib import SequenceMatcher
 
@@ -48,6 +49,16 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
+def print_users(users: List[MyAEGEEMember | Dict[str, Any]]):
+    if len(users) > 0:
+        if isinstance(users[0], MyAEGEEMember):
+            print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', users)))
+        elif users[0]['kind'] == 'admin#directory#user':
+            print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", users)))
+        else:
+            raise NotImplementedError()
+
+
 def members_sync(args: argparse.Namespace) -> None:
     """Prints differences between members list from MyAEGEE and members@aegee-muenchen.de (missing and extra emails).
     """
@@ -67,7 +78,7 @@ def members_sync(args: argparse.Namespace) -> None:
             missing.append(member)
     if len(missing) > 0:
         print(f'Members missing from {AEGEE_MUENCHEN_MEMBERS_GROUP} (matched {len(myaegee_members) - len(missing)}/{len(myaegee_members)} members):')
-        print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', missing)))
+        print_users(missing)
     else:
         print(f'All MyAEGEE users included in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
     print('')
@@ -81,7 +92,7 @@ def members_sync(args: argparse.Namespace) -> None:
                 extra.append(user)
     if len(extra) > 0:
         print(f'Extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP} (matched {len(gsuite_users) - len(extra)}/{len(gsuite_users)} users):')
-        print('\n'.join(map(lambda u: f"* {u['email']}", extra)))
+        print_users(extra)
     else:
         print(f'No extra users in {AEGEE_MUENCHEN_MEMBERS_GROUP}!')
     print('')
@@ -109,7 +120,7 @@ def actives_sync(args: argparse.Namespace) -> None:
     print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} MyAEGEE users matched')
     print('')
     print('Members without G-Suite account:')
-    print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', missing)))
+    print_users(missing)
     print('')
 
     # Find extra users with G-Suite account which are not in MyAEGEE
@@ -123,20 +134,20 @@ def actives_sync(args: argparse.Namespace) -> None:
                 extra.append(user)
     if len(extra) > 0:
         print(f'Extra users in G-Suite (matched {len(gsuite_users) - len(extra)}/{len(gsuite_users)} users):')
-        print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", extra)))
+        print_users(extra)
     else:
         print('No extra users in G-Suite!')
     print('')
 
     # Find G-Suite users that are not in the actives group
-    actives_missing: List[Member] = []
+    actives_missing: List[User] = []
     for user in gsuite_users:
         is_in_group = any([active_user['id'] == user['id'] for active_user in gsuite_active_users])
         if not is_in_group:
             actives_missing.append(user)
     if len(actives_missing) > 0:
         print(f'G-Suite members not included in {AEGEE_MUENCHEN_ACTIVES_GROUP} ({len(actives_missing)}/{len(gsuite_users)})')
-        print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))}):", actives_missing)))
+        print_users(actives_missing)
     else:
         print(f'All G-Suite users included in {AEGEE_MUENCHEN_ACTIVES_GROUP}!')
     print('')
