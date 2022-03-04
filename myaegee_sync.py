@@ -119,9 +119,7 @@ def actives_sync(args: argparse.Namespace) -> None:
         name_match = any([user for user in gsuite_users if SequenceMatcher(None, f'{member.user.first_name} {member.user.last_name}', user['name']['fullName']).ratio() > 0.9])
         if not email_match and not name_match:
             missing.append(member)
-    print(f'{len(myaegee_members) - len(missing)}/{len(myaegee_members)} MyAEGEE users matched')
-    print('')
-    print('Members without G-Suite account:')
+    print(f'Members without G-Suite account (matched {len(myaegee_members) - len(missing)}/{len(myaegee_members)} users):')
     print_users(missing)
     print('')
 
@@ -148,7 +146,7 @@ def actives_sync(args: argparse.Namespace) -> None:
         if not is_in_group:
             actives_missing.append(user)
     if len(actives_missing) > 0:
-        print(f'G-Suite members not included in {AEGEE_MUENCHEN_ACTIVES_GROUP} ({len(actives_missing)}/{len(gsuite_users)})')
+        print(f'G-Suite members not included in {AEGEE_MUENCHEN_ACTIVES_GROUP} (found {len(gsuite_users) - len(actives_missing)}/{len(gsuite_users)} active users)')
         print_users(actives_missing)
     else:
         print(f'All G-Suite users included in {AEGEE_MUENCHEN_ACTIVES_GROUP}!')
