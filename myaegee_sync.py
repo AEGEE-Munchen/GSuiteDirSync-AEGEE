@@ -52,9 +52,11 @@ def parse_args() -> argparse.Namespace:
 def print_users(users: List[MyAEGEEMember | Dict[str, Any]]):
     if len(users) > 0:
         if isinstance(users[0], MyAEGEEMember):
-            print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', users)))
+            sorted_users = sorted(users, key=lambda m: m.user.email)
+            print('\n'.join(map(lambda m: f'* {m.user.first_name} {m.user.last_name} ({m.user.email})', sorted_users)))
         elif users[0]['kind'] == 'admin#directory#user':
-            print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", users)))
+            sorted_users = sorted(users, key=lambda u: u['primaryEmail'])
+            print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", sorted_users)))
         else:
             raise NotImplementedError()
 
