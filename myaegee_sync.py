@@ -57,8 +57,11 @@ def print_users(users: List[MyAEGEEMember | Dict[str, Any]]):
         elif users[0]['kind'] == 'admin#directory#user':
             sorted_users = sorted(users, key=lambda u: u['primaryEmail'])
             print('\n'.join(map(lambda u: f"* {u['name']['fullName']} ({', '.join(filter(lambda email: email.endswith(f'@{AEGEE_MUENCHEN_DOMAIN}'), map(lambda email: email['address'], u['emails'])))})", sorted_users)))
+        elif users[0]['kind'] == 'admin#directory#member':
+            sorted_users = sorted(users, key=lambda u: u['email'])
+            print('\n'.join(map(lambda m: f"* {m['email']}", sorted_users)))
         else:
-            raise NotImplementedError()
+            raise NotImplementedError(f"Unknown user type: {users[0]['kind']}")
 
 
 def members_sync(args: argparse.Namespace) -> None:
