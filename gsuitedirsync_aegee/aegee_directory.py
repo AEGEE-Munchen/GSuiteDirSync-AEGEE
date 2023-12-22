@@ -1,19 +1,23 @@
 from __future__ import annotations
-from dataclass_wizard import fromdict, DumpMeta
-from dataclass_wizard.enums import DateTimeTo, LetterCase
+
 from dataclasses import dataclass
 from datetime import date, datetime
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+from typing import TYPE_CHECKING, Any, List
+
+from dataclass_wizard import DumpMeta, fromdict
+from dataclass_wizard.enums import DateTimeTo, LetterCase
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from typing import TYPE_CHECKING, List, Any
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 
 if TYPE_CHECKING:
-    from googleapiclient._apis.admin.directory_v1.schemas import Member as GSuiteMember, User as GSuiteUser
+    from googleapiclient._apis.admin.directory_v1.schemas import Member as GSuiteMember
+    from googleapiclient._apis.admin.directory_v1.schemas import User as GSuiteUser
 
 import os.path
 import pickle
+
 import requests
 
 

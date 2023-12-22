@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 
-from typing import Dict
-from aegee_directory import *
-from difflib import SequenceMatcher
-
 import argparse
 import os
 import re
+from difflib import SequenceMatcher
+from typing import TYPE_CHECKING, Any, Dict, List
+
+from gsuitedirsync_aegee.aegee_directory import (
+    MyAEGEEMember,
+    gsuite_auth,
+    gsuite_load_directory,
+    gsuite_load_group,
+    myaegee_get_members,
+    myaegee_login,
+)
+
+if TYPE_CHECKING:
+    from gsuitedirsync_aegee.aegee_directory import GSuiteMember, GSuiteUser
 
 AEGEE_MUENCHEN_BODY_ID = 117
 AEGEE_MUENCHEN_MEMBERS_GROUP = 'members@aegee-muenchen.de'
