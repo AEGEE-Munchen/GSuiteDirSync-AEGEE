@@ -2,7 +2,7 @@
 .DS_Store
 
 # Python environment
-/__pycache__
+__pycache__/
 /venv
 
 # IDE settings
